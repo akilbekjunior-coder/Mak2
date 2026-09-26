@@ -1,0 +1,6 @@
+{
+  "name": "Maklerim - Ko'chmas mulk portali",
+  "description": "Nukus va Qoraqalpog'iston bo'yicha eng yaxshi ko'chmas mulk e'lonlari portali: uylar, kvartiralar va tijorat binolari.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
