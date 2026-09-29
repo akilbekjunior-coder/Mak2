@@ -29,6 +29,9 @@ import { MortgageCalculatorModal } from './components/MortgageCalculatorModal';
 import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { Footer } from './components/Footer';
 
+// Импортируем созданный клиент Supabase
+import { supabase } from './supabaseClient';
+
 export default function App() {
   const [properties, setProperties] = useState<Property[]>(() => {
     const saved = localStorage.getItem('maklerim_properties');
@@ -51,7 +54,7 @@ export default function App() {
         console.error(e);
       }
     }
-    return ['prop-1']; // initial sample favorite
+    return ['prop-1'];
   });
 
   const [currency, setCurrency] = useState<Currency>('UZS');
@@ -79,26 +82,62 @@ export default function App() {
 
   const t = translations[language];
 
-  // Backend serverdan e'lonlarni yuklab olish
-useEffect(() => {
-  fetch('http://localhost:5000/api/listings')
-    .then((res) => res.json())
-    .then((data) => {
-      // Backend joylashuviga qarab data yoki data.data shaklida keladi
-      const serverData = Array.isArray(data) ? data : data.data;
-      if (serverData && serverData.length > 0) {
-        setProperties(serverData);
-      }
-    })
-    .catch((err) => {
-      console.error("Backend'dan ma'lumot olishda xatolik:", err);
-    });
-}, []);
+ // 1. Подгрузка данных из Supabase при загрузке страницы
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-// Save to localStorage
-useEffect(() => {
-  localStorage.setItem('maklerim_properties', JSON.stringify(properties));
-}, [properties]);
+        if (error) {
+          console.error('Ошибка загрузки из Supabase:', error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Supabase ma'lumotlarini React tushunadigan Property formatiga o'giramiz
+          const mappedProperties: Property[] = data.map((item: any) => ({
+            id: String(item.id),
+            title: item.title || item.description || 'E\'lon',
+            description: item.description || '',
+            priceUZS: Number(item.price) || 0,
+            priceUSD: Math.round((Number(item.price) || 0) / 12800), // taxminiy USD kursi
+            area: Number(item.area) || 0,
+            rooms: Number(item.rooms) || 1,
+            floor: Number(item.floor) || 1,
+            totalFloors: Number(item.total_floors) || 1,
+            address: item.location || item.address || '',
+            district: item.district || 'Nukus',
+            dealType: item.deal_type || item.type || 'sale',
+            propertyType: item.property_type || 'apartment',
+            images: item.image_url ? [item.image_url] : ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'],
+            owner: {
+              name: item.owner_name || 'Ega',
+              phone: item.phone || '',
+              verified: true,
+            },
+            bathrooms: Number(item.bathrooms) || 1,
+            isNew: true,
+            hasMortgage: Boolean(item.has_mortgage),
+            createdAt: item.created_at,
+          }));
+
+          setProperties(mappedProperties);
+        }
+      } catch (err) {
+        console.error('Непредвиденная ошибка:', err);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem('maklerim_properties', JSON.stringify(properties));
+  }, [properties]);
 
   useEffect(() => {
     localStorage.setItem('maklerim_favorites', JSON.stringify(favorites));
@@ -110,23 +149,49 @@ useEffect(() => {
     );
   };
 
+  // 2. Добавление объявления в Supabase
   const handleAddProperty = async (newProp: Property) => {
-  // 1. Ekran tezroq yangilanishi uchun frontend holatiga qo'shamiz
-  setProperties(prev => [newProp, ...prev]);
+    // 1. Формируем объект строго под поля таблицы Supabase
+    const payload = {
+      title: newProp.title || '',
+      description: newProp.description || '',
+      price: Number(newProp.priceUZS || newProp.priceUSD) || 0,
+      area: Number(newProp.area) || 0,
+      rooms: Number(newProp.rooms) || 1,
+      floor: Number(newProp.floor) || 1,
+      total_floors: Number(newProp.totalFloors) || 1,
+      address: newProp.address || '',
+      district: newProp.district || '',
+      phone: newProp.owner?.phone || '',
+      owner_name: newProp.owner?.name || '',
+      image_url: newProp.images?.[0] || '',
+      bathrooms: Number(newProp.bathrooms) || 1
+    };
 
-  // 2. Backend'ga POST so'rovi yuboramiz
-  try {
-    await fetch('http://localhost:5000/api/listings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newProp),
-    });
-  } catch (error) {
-    console.error("Yangi e'lonni serverga saqlashda xatolik:", error);
-  }
-};
+    try {
+      // 2. Сначала отправляем очищенный payload в Supabase
+      const { data, error } = await supabase
+        .from('properties')
+        .insert([payload])
+        .select();
+
+      if (error) {
+        console.error('Ошибка сохранения в Supabase:', error.message);
+        alert('Ошибка при сохранении в базу: ' + error.message);
+        return;
+      }
+
+      // 3. Добавляем объект в состояние только после успешного ответа БД
+      if (data && data.length > 0) {
+        setProperties(prev => [data[0] as Property, ...prev]);
+        alert("Объявление успешно сохранено в базе данных!");
+      } else {
+        setProperties(prev => [newProp, ...prev]);
+      }
+    } catch (error) {
+      console.error('Ошибка сети или запроса:', error);
+    }
+  };
 
   const handleResetFilters = () => {
     setFilter({
@@ -146,35 +211,28 @@ useEffect(() => {
   const filteredProperties = useMemo(() => {
     return properties
       .filter((prop) => {
-        // Deal type
         if (filter.dealType && prop.dealType !== filter.dealType) {
           return false;
         }
-        // Property type
         if (filter.propertyType && prop.propertyType !== filter.propertyType) {
           return false;
         }
-        // District
-        if (filter.district && !prop.district.toLowerCase().includes(filter.district.toLowerCase())) {
+        if (filter.district && !prop.district?.toLowerCase().includes(filter.district.toLowerCase())) {
           return false;
         }
-        // Rooms
         if (filter.rooms) {
           if (filter.rooms === '4+') {
             if (prop.rooms < 4) return false;
-          } else if (prop.rooms.toString() !== filter.rooms) {
+          } else if (prop.rooms?.toString() !== filter.rooms) {
             return false;
           }
         }
-        // Mortgage
         if (filter.hasMortgageOnly && !prop.hasMortgage) {
           return false;
         }
-        // Verified
-        if (filter.verifiedOnly && !prop.owner.verified) {
+        if (filter.verifiedOnly && !prop.owner?.verified) {
           return false;
         }
-        // Max Price
         if (filter.priceMax) {
           const max = Number(filter.priceMax);
           if (!isNaN(max) && max > 0) {
@@ -182,13 +240,12 @@ useEffect(() => {
             if (currency === 'USD' && prop.priceUSD > max) return false;
           }
         }
-        // Search Query (title, address, code ID, district)
         if (filter.searchQuery.trim()) {
           const q = filter.searchQuery.toLowerCase().trim();
-          const matchCode = prop.code.toLowerCase().includes(q);
-          const matchTitle = prop.title.toLowerCase().includes(q);
-          const matchAddress = prop.address.toLowerCase().includes(q);
-          const matchDistrict = prop.district.toLowerCase().includes(q);
+          const matchCode = prop.code?.toLowerCase().includes(q);
+          const matchTitle = prop.title?.toLowerCase().includes(q);
+          const matchAddress = prop.address?.toLowerCase().includes(q);
+          const matchDistrict = prop.district?.toLowerCase().includes(q);
           if (!matchCode && !matchTitle && !matchAddress && !matchDistrict) {
             return false;
           }
@@ -206,7 +263,6 @@ useEffect(() => {
         if (sortBy === 'area_desc') {
           return b.area - a.area;
         }
-        // newest default
         return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
       });
   }, [properties, filter, sortBy, currency]);
@@ -218,7 +274,6 @@ useEffect(() => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/60 selection:bg-amber-400 selection:text-slate-950 font-sans antialiased text-slate-900">
       
-      {/* Top Header Navigation */}
       <Header
         language={language}
         setLanguage={setLanguage}
@@ -234,7 +289,6 @@ useEffect(() => {
         setActiveDealType={(deal) => setFilter(prev => ({ ...prev, dealType: deal }))}
       />
 
-      {/* Hero & Search/Filter Section */}
       <HeroFilter
         filter={filter}
         setFilter={setFilter}
@@ -244,10 +298,8 @@ useEffect(() => {
         totalResults={filteredProperties.length}
       />
 
-      {/* Main Content Area: Listings & Results */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         
-        {/* Results Bar & Sorting */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 mb-6 border-b border-slate-200/80">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -260,8 +312,6 @@ useEffect(() => {
           </div>
 
           <div className="flex items-center gap-3">
-            
-            {/* Sort Dropdown */}
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-2xs">
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden sm:inline text-slate-400">{t.sortBy}:</span>
@@ -277,7 +327,6 @@ useEffect(() => {
               </select>
             </div>
 
-            {/* View Mode Toggle (Grid / List) */}
             <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
               <button
                 onClick={() => setViewMode('grid')}
@@ -294,11 +343,9 @@ useEffect(() => {
                 <LayoutList className="w-4 h-4" />
               </button>
             </div>
-
           </div>
         </div>
 
-        {/* Listings Grid */}
         {filteredProperties.length > 0 ? (
           <div className={`grid gap-6 ${
             viewMode === 'grid' 
@@ -318,7 +365,6 @@ useEffect(() => {
             ))}
           </div>
         ) : (
-          /* Empty Search State */
           <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-lg mx-auto my-8">
             <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
               <Building className="w-7 h-7 stroke-[1.5]" />
@@ -339,7 +385,6 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Quick CTA Banner for property owners */}
         <div className="mt-16 bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold mb-3 border border-amber-400/30">
@@ -364,19 +409,16 @@ useEffect(() => {
             </button>
           </div>
 
-          {/* Decorative background circle */}
           <div className="absolute -right-16 -bottom-16 w-64 h-64 rounded-full bg-amber-500/10 blur-2xl pointer-events-none" />
         </div>
 
       </main>
 
-      {/* Footer */}
       <Footer
         language={language}
         onSelectDistrict={(dist) => setFilter(prev => ({ ...prev, district: dist }))}
       />
 
-      {/* Modals & Drawers */}
       <PropertyDetailModal
         property={selectedProperty}
         onClose={() => setSelectedProperty(null)}
