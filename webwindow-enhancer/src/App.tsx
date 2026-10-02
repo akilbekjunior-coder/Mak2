@@ -98,33 +98,33 @@ export default function App() {
 
         if (data && data.length > 0) {
           // Supabase ma'lumotlarini React tushunadigan Property formatiga o'giramiz
-         const mappedProperties: Property[] = data.map((item: any) => ({
-  id: String(item.id),
-  title: item.title || item.description || "E'lon",
-  description: item.description || '',
-  priceUZS: Number(item.price) || 0,
-  priceUSD: Math.round((Number(item.price) || 0) / 12800),
-  area: Number(item.area) || 0,
-  rooms: Number(item.rooms) || 1,
-  floor: Number(item.floor) || 1,
-  totalFloors: Number(item.total_floors) || 1,
-  address: item.location || item.address || '',
-  district: item.district || 'Nukus',
-  dealType: item.deal_type || item.type || 'sale',
-  propertyType: item.property_type || 'apartment',
-  images: item.image_url 
-    ? [item.image_url] 
-    : ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'],
-  owner: {
-    name: item.owner_name || 'Ego',
-    phone: item.phone || item.owner_phone || '+998 90 999 55 22',
-    verified: true
-  },
-  bathrooms: Number(item.bathrooms) || 1,
-  isNew: true,
-  hasMortgage: Boolean(item.has_mortgage),
-  createdAt: item.created_at || new Date().toISOString()
-}));
+        const mappedProperties: Property[] = data.map((item: any) => ({
+          id: String(item.id),
+          title: item.title || item.description || "E'lon",
+          description: item.description || '',
+          priceUZS: Number(item.price) || 0,
+          priceUSD: Math.round((Number(item.price) || 0) / 12800),
+          area: Number(item.area) || 0,
+          rooms: Number(item.rooms) || 1,
+          floor: Number(item.floor) || 1,
+          totalFloors: Number(item.total_floors) || 1,
+          address: item.location || item.address || '',
+          district: item.district || 'Nukus',
+          dealType: item.deal_type || item.type || 'sale',
+          propertyType: item.property_type || 'apartment',
+          images: item.image_url 
+            ? [item.image_url] 
+            : ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80'],
+          owner: {
+            name: item.owner_name || 'Ego',
+            phone: item.phone || item.owner_phone || '+998 90 999 55 22',
+            verified: true
+          },
+          bathrooms: Number(item.bathrooms) || 1,
+          isNew: true,
+          hasMortgage: Boolean(item.has_mortgage),
+          createdAt: item.created_at || new Date().toISOString()
+        }));
 
           setProperties(mappedProperties);
         }
