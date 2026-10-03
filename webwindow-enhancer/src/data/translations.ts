@@ -1,8 +1,8 @@
 export const translations = {
   uz: {
     portalName: "Maklerim",
-    portalSubtitle: "Nukus va Qoraqalpog'iston ko'chmas mulk portali",
-    heroTitle: "Nukus va Qoraqalpog'iston bo'yicha eng yaxshi ko'chmas mulklar",
+    portalSubtitle: "Qoraqalpog'iston ko'chmas mulk portali",
+    heroTitle: "Qoraqalpog'iston bo'yicha eng yaxshi ko'chmas mulklar",
     heroSubtitle: "O'zingizga mos va qulay uy-joylarni oson toping",
     searchPlaceholder: "Manzil yoki ID bo'yicha qidirish...",
     buy: "Sotiladigan uylar",
@@ -61,8 +61,8 @@ export const translations = {
   },
   ru: {
     portalName: "Maklerim",
-    portalSubtitle: "Портал недвижимости Нукуса и Каракалпакстана",
-    heroTitle: "Лучшая недвижимость в Нукусе и Каракалпакстане",
+    portalSubtitle: "Портал недвижимости Каракалпакстана",
+    heroTitle: "Лучшая недвижимость по Каракалпакстану",
     heroSubtitle: "Найдите идеальное и комфортное жилье легко и быстро",
     searchPlaceholder: "Поиск по адресу или ID объявления...",
     buy: "Продажа домов",
