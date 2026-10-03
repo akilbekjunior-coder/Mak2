@@ -38,6 +38,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   language,
   setLanguage,
+  currency,
+  setCurrency,
   favoritesCount,
   onOpenFavorites,
   onOpenAddListing,
@@ -65,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5 text-amber-400 font-medium">
                 <Sparkles className="w-3.5 h-3.5" />
-                Nukus va butun Qoraqalpog'iston bo'yicha ko'chmas mulk maydonchasi
+                Qoraqalpog'iston bo'yicha eng yaxshi ko'chmas mulklar
               </span>
 
               <span className="text-slate-600">•</span>
@@ -77,11 +79,11 @@ export const Header: React.FC<HeaderProps> = ({
 
             <div className="flex items-center gap-5">
               <a
-                href="tel:+998612220000"
+                href="tel:+998990671991"
                 className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors"
               >
                 <PhoneCall className="w-3 h-3 text-amber-400" />
-                <span>Aloqa markazi: (61) 222-00-00</span>
+                <span>Aloqa markazi: +998 99 067 19 91</span>
               </a>
 
               <span className="text-slate-600">|</span>
@@ -103,9 +105,9 @@ export const Header: React.FC<HeaderProps> = ({
       {/* =====================================================
           MAIN HEADER
       ====================================================== */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
 
-        <div className="h-16 sm:h-[72px] flex items-center gap-2 sm:gap-4">
+        <div className="h-16 sm:h-[72px] flex items-center justify-between gap-1 sm:gap-4">
 
           {/* =================================================
               LOGO
@@ -118,11 +120,11 @@ export const Header: React.FC<HeaderProps> = ({
                 behavior: 'smooth',
               })
             }
-            className="flex items-center gap-2 sm:gap-3 shrink-0"
+            className="flex items-center gap-1.5 sm:gap-3 shrink-0"
           >
             <div
               className="
-                w-9 h-9
+                w-8 h-8
                 sm:w-10 sm:h-10
                 rounded-xl
                 bg-gradient-to-tr from-amber-500 to-amber-400
@@ -131,14 +133,14 @@ export const Header: React.FC<HeaderProps> = ({
                 shadow-md shadow-amber-500/20
               "
             >
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 stroke-[2.2]" />
             </div>
 
             <div className="text-left">
               <div className="flex items-center">
                 <span
                   className="
-                    text-[21px]
+                    text-lg
                     sm:text-2xl
                     font-black
                     tracking-tight
@@ -298,38 +300,60 @@ export const Header: React.FC<HeaderProps> = ({
           {/* =================================================
               RIGHT ACTIONS
           ================================================== */}
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
 
-            {/* ===============================================
-                LANGUAGE
-            ================================================ */}
+            {/* Valyuta almashtirish tugmasi - MOBILDA BERKITILDI (hidden md:flex) */}
+            <button
+              type="button"
+              onClick={() => setCurrency(currency === 'UZS' ? 'USD' : 'UZS')}
+              className="
+                hidden
+                md:flex
+                h-9 sm:h-10
+                px-2 sm:px-3
+                items-center
+                justify-center
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                hover:bg-slate-50
+                text-slate-700
+                text-xs sm:text-sm
+                font-bold
+                transition-all
+              "
+              title="Valyutani o'zgartirish"
+            >
+              {currency === 'UZS' ? 'UZS' : 'USD'}
+            </button>
+
+            {/* LANGUAGE */}
             <div className="relative">
 
               <button
                 type="button"
                 onClick={() => setLangDropdownOpen((prev) => !prev)}
                 className="
-                  h-10
+                  h-9 sm:h-10
                   flex
                   items-center
-                  gap-1
-                  px-2.5
-                  sm:px-3
+                  gap-0.5 sm:gap-1
+                  px-2 sm:px-3
                   rounded-xl
                   border
                   border-slate-200
                   bg-white
                   hover:bg-slate-50
                   text-slate-700
-                  text-xs
-                  sm:text-sm
+                  text-xs sm:text-sm
                   font-semibold
                   transition-all
                   whitespace-nowrap
                 "
                 aria-label="Tilni tanlash"
               >
-                <Globe className="w-4 h-4 text-slate-500" />
+                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
 
                 <span>
                   {language.toUpperCase()}
@@ -337,7 +361,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <ChevronDown
                   className={`
-                    w-3.5 h-3.5 text-slate-400
+                    w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400
                     transition-transform
                     ${langDropdownOpen ? 'rotate-180' : ''}
                   `}
@@ -359,7 +383,7 @@ export const Header: React.FC<HeaderProps> = ({
                       right-0
                       top-full
                       mt-2
-                      w-48
+                      w-40 sm:w-48
                       bg-white
                       rounded-xl
                       shadow-xl
@@ -384,8 +408,6 @@ export const Header: React.FC<HeaderProps> = ({
                       Til / Язык
                     </div>
 
-
-                    {/* UZ */}
                     <button
                       type="button"
                       onClick={() => {
@@ -397,7 +419,7 @@ export const Header: React.FC<HeaderProps> = ({
                         px-3
                         py-2
                         text-left
-                        text-sm
+                        text-xs sm:text-sm
                         flex
                         items-center
                         justify-between
@@ -418,8 +440,6 @@ export const Header: React.FC<HeaderProps> = ({
                       )}
                     </button>
 
-
-                    {/* RU */}
                     <button
                       type="button"
                       onClick={() => {
@@ -431,7 +451,7 @@ export const Header: React.FC<HeaderProps> = ({
                         px-3
                         py-2
                         text-left
-                        text-sm
+                        text-xs sm:text-sm
                         flex
                         items-center
                         justify-between
@@ -459,16 +479,13 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
 
-            {/* ===============================================
-                FAVORITES
-            ================================================ */}
+            {/* FAVORITES */}
             <button
               type="button"
               onClick={onOpenFavorites}
               className="
                 relative
-                w-10
-                h-10
+                w-9 h-9 sm:w-10 sm:h-10
                 flex
                 items-center
                 justify-center
@@ -483,8 +500,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Heart
                 className={`
-                  w-5
-                  h-5
+                  w-4 h-4 sm:w-5 sm:h-5
                   ${
                     favoritesCount > 0
                       ? 'fill-red-500 text-red-500'
@@ -497,8 +513,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <span
                   className="
                     absolute
-                    -top-1.5
-                    -right-1.5
+                    -top-1
+                    -right-1
                     w-4
                     h-4
                     rounded-full
@@ -517,20 +533,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
 
-            {/* ===============================================
-                ADD LISTING
-            ================================================ */}
+            {/* ADD LISTING */}
             <button
               type="button"
               onClick={onOpenAddListing}
               className="
-                h-10
+                h-9 sm:h-10
                 flex
                 items-center
                 justify-center
                 gap-1
-                px-3
-                sm:px-4
+                px-2.5 sm:px-4
                 rounded-xl
                 bg-gradient-to-r
                 from-amber-400
@@ -539,8 +552,7 @@ export const Header: React.FC<HeaderProps> = ({
                 hover:to-amber-600
                 text-slate-950
                 font-black
-                text-xs
-                sm:text-sm
+                text-xs sm:text-sm
                 shadow-sm
                 hover:shadow-md
                 active:scale-95
@@ -548,7 +560,7 @@ export const Header: React.FC<HeaderProps> = ({
                 whitespace-nowrap
               "
             >
-              <Plus className="w-5 h-5 stroke-[2.8]" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.8]" />
 
               <span>
                 E'lon
@@ -556,16 +568,13 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
 
-            {/* ===============================================
-                MOBILE MENU
-            ================================================ */}
+            {/* MOBILE MENU BUTTON (3 nuqta / menyu) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               className="
                 lg:hidden
-                w-10
-                h-10
+                w-9 h-9 sm:w-10 sm:h-10
                 flex
                 items-center
                 justify-center
@@ -577,9 +586,9 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label="Menyu"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               )}
             </button>
 
@@ -589,67 +598,40 @@ export const Header: React.FC<HeaderProps> = ({
 
 
         {/* =================================================
-            MOBILE SEARCH
+            MOBILE ALOQA MARKAZI TUGMASI
         ================================================== */}
-        <div className="pb-3 md:hidden">
-
-          <div className="relative">
-
-            <Search
-              className="
-                absolute
-                left-3.5
-                top-1/2
-                -translate-y-1/2
-                w-5
-                h-5
-                text-slate-400
-              "
-            />
-
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.searchPlaceholder}
-              className="
-                w-full
-                h-11
-                pl-11
-                pr-10
-                text-sm
-                bg-slate-100
-                border
-                border-slate-200
-                rounded-xl
-                text-slate-800
-                placeholder-slate-400
-                focus:outline-none
-                focus:border-amber-400
-                focus:ring-2
-                focus:ring-amber-500/20
-              "
-            />
-
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="
-                  absolute
-                  right-3
-                  top-1/2
-                  -translate-y-1/2
-                  text-slate-400
-                  hover:text-slate-700
-                "
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-
-          </div>
-
+        <div className="pb-2.5 md:hidden">
+          <a
+            href="tel:+998990671991"
+            className="
+              w-full
+              h-10
+              px-3.5
+              rounded-xl
+              bg-amber-50
+              border
+              border-amber-200/80
+              hover:bg-amber-100
+              flex
+              items-center
+              justify-between
+              transition-colors
+              active:scale-[0.99]
+            "
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-700">
+                <PhoneCall className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-medium text-slate-600">
+                Aloqa markazi:
+              </span>
+            </div>
+            
+            <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-wide">
+              +998 99 067 19 91
+            </span>
+          </a>
         </div>
 
 
@@ -667,8 +649,28 @@ export const Header: React.FC<HeaderProps> = ({
             "
           >
 
+            {/* Mobilda valyuta almashtirish (Menyu ichiga o'tkazildi) */}
+            <div className="flex items-center justify-between px-1 py-1">
+              <span className="text-xs font-semibold text-slate-600">
+                Valyuta:
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrency(currency === 'UZS' ? 'USD' : 'UZS')}
+                className="
+                  px-3 py-1.5
+                  rounded-lg
+                  bg-slate-100
+                  text-slate-800
+                  text-xs font-bold
+                "
+              >
+                {currency === 'UZS' ? 'UZS (So\'m)' : 'USD ($)'}
+              </button>
+            </div>
+
             {/* Deal types */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 pt-1">
 
               <button
                 type="button"
